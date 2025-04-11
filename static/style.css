@@ -1,28 +1,32 @@
 body {
-    font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #6f4ad4, #9b59b6);
+    font-family: 'Segoe UI', sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 40px;
     color: #333;
 }
+
 .container {
     max-width: 700px;
-    margin: 80px auto;
+    margin: auto;
     padding: 30px;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
+
 h1 {
     text-align: center;
     color: #4a235a;
 }
+
 form {
     display: flex;
     gap: 10px;
     justify-content: center;
     margin-bottom: 20px;
 }
+
 input[type="text"] {
     flex: 1;
     padding: 12px;
@@ -30,6 +34,7 @@ input[type="text"] {
     border-radius: 8px;
     font-size: 16px;
 }
+
 button {
     padding: 12px 20px;
     background-color: #6f4ad4;
@@ -39,15 +44,14 @@ button {
     cursor: pointer;
     font-size: 16px;
 }
+
 button:hover {
     background-color: #5a3ab3;
 }
-.result, .error {
+
+.result {
     background: #f3f1fa;
     padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
-}
-.error {
-    color: red;
 }
