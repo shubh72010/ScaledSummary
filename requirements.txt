@@ -1,5 +1,5 @@
-Flask
-youtube-transcript-api
+Flask==2.2.5
+youtube-transcript-api==0.6.1
 transformers
 torch
 gunicorn
