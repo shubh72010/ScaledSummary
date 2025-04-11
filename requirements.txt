@@ -1,0 +1,7 @@
+Flask
+youtube-transcript-api
+transformers
+torch
+sentencepiece
+accelerate
+gunicorn
