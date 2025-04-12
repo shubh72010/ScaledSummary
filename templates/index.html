@@ -1,32 +1,107 @@
-<!-- index.html --><!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ScaledSummary</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      background: linear-gradient(to bottom, #6a11cb, #2575fc);
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    input, button {
+      padding: 0.8rem;
+      border: none;
+      border-radius: 12px;
+      margin: 0.5rem;
+      font-size: 1rem;
+    }
+
+    input {
+      width: 80%;
+      max-width: 500px;
+    }
+
+    .summary-btn {
+      background-color: #fff;
+      color: #2575fc;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .summary-btn:hover {
+      background-color: #2575fc;
+      color: white;
+    }
+
+    #summaryOutput {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 700px;
+      min-height: 150px;
+      white-space: pre-wrap;
+    }
+
+    .tiles {
+      margin-top: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .easter-egg {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .easter-egg:hover {
+      transform: scale(1.05);
+      background: rgba(255, 255, 255, 0.25);
+    }
+  </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>ScaledSummary</h1>
-      <p class="tagline">Summarize YouTube like a pro.</p>
-    </header><div class="input-area">
-  <input id="video-url" type="text" placeholder="Paste YouTube URL here...">
-  <div class="button-group">
-    <button onclick="fetchSummary()">Summarize</button>
-    <button onclick="triggerEasterEgg()">Surprise</button>
+  <h1>ScaledSummary</h1>
+
+  <input type="text" id="videoUrl" placeholder="Paste a YouTube video URL here" />
+  <button class="summary-btn">Summarize</button>
+
+  <div id="summaryOutput">Waiting for summary...</div>
+
+  <div class="tiles">
+    <div class="easter-egg">Clancy Portal</div>
+    <div class="easter-egg">Scaled Button</div>
+    <div class="easter-egg">Icy Surprise</div>
+    <div class="easter-egg">Purpleverse</div>
+    <div class="easter-egg">TOP Secret</div>
   </div>
-</div>
 
-<div id="summary-box" class="output-box hidden">
-  <h2>Summary</h2>
-  <p id="summary-text">No summary yet...</p>
-</div>
-
-<footer>
-  <p>Scaled and Icy vibes. <span class="egg" onclick="rickroll()">Click me?</span></p>
-</footer>
-
-  </div>  <script src="script.js"></script></body>
+  <script src="script.js"></script>
+</body>
 </html>
