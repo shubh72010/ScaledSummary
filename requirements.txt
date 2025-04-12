@@ -1,3 +1,4 @@
 Flask
 youtube-transcript-api
 transformers
+torch
