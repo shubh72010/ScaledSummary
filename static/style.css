@@ -1,48 +1,92 @@
 body {
-    margin: 0;
-    font-family: 'Arial', sans-serif;
-    background: #f0f0f0;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #8e44ad, #3498db);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-.container {
-    width: 80%;
-    margin: auto;
-    padding: 20px;
-    text-align: center;
+header {
+  margin: 2rem 0 1rem;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 2px 2px #000;
+  animation: popIn 0.5s ease-out;
+}
+
+main {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 700px;
+  width: 90%;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 input[type="text"] {
-    width: 60%;
-    padding: 10px;
-    margin: 10px 0;
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
 }
 
 button {
-    padding: 10px 20px;
-    cursor: pointer;
+  background-color: #9b59b6;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1.5rem;
+  margin: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
-.result, .error {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 5px;
+button:hover {
+  background-color: #8e44ad;
 }
 
-.result {
-    background-color: #e0ffe0;
+#summaryOutput {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  animation: fadeIn 0.5s ease-in;
 }
 
-.error {
-    background-color: #ffe0e0;
+.easter-egg {
+  display: inline-block;
+  padding: 0.6rem;
+  margin: 0.2rem;
+  background-color: #ffffff33;
+  border: 2px dashed #ffffff55;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
-.easter-eggs {
-    margin-top: 30px;
+.easter-egg:hover {
+  transform: scale(1.1) rotate(2deg);
+  background-color: #ffffff55;
 }
 
-.tile {
-    display: inline-block;
-    margin: 0 10px;
-    font-size: 2em;
-    cursor: pointer;
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
