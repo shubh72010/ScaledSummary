@@ -6,102 +6,115 @@
   <title>ScaledSummary</title>
   <style>
     body {
-      background: linear-gradient(to bottom, #6a11cb, #2575fc);
+      background: linear-gradient(135deg, #b38add, #7f62c4);
+      font-family: 'Segoe UI', sans-serif;
       color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 2rem;
-      overflow-x: hidden;
+      margin: 0;
     }
 
-    h1 {
-      font-size: 2.5rem;
-      animation: float 2s ease-in-out infinite;
+    .tile {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1rem;
+      margin: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 600px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s;
     }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+    .tile:hover {
+      transform: scale(1.03);
     }
 
     input, button {
-      padding: 0.8rem;
+      padding: 0.6rem;
       border: none;
-      border-radius: 12px;
+      border-radius: 8px;
       margin: 0.5rem;
       font-size: 1rem;
     }
 
-    input {
-      width: 80%;
-      max-width: 500px;
-    }
-
-    .summary-btn {
-      background-color: #fff;
-      color: #2575fc;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .summary-btn:hover {
-      background-color: #2575fc;
+    button {
+      background-color: #5e35b1;
       color: white;
-    }
-
-    #summaryOutput {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      width: 90%;
-      max-width: 700px;
-      min-height: 150px;
-      white-space: pre-wrap;
-    }
-
-    .tiles {
-      margin-top: 2rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1rem;
-      width: 100%;
-      max-width: 700px;
-    }
-
-    .easter-egg {
-      background: rgba(255, 255, 255, 0.15);
-      padding: 1rem;
-      border-radius: 12px;
-      text-align: center;
       cursor: pointer;
-      transition: transform 0.2s ease;
     }
 
-    .easter-egg:hover {
-      transform: scale(1.05);
-      background: rgba(255, 255, 255, 0.25);
+    button:hover {
+      background-color: #7e57c2;
+    }
+
+    #output {
+      white-space: pre-wrap;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+    }
+
+    .egg {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .egg-button {
+      background-color: transparent;
+      color: white;
+      text-decoration: underline;
+      border: none;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <h1>ScaledSummary</h1>
-
-  <input type="text" id="videoUrl" placeholder="Paste a YouTube video URL here" />
-  <button class="summary-btn">Summarize</button>
-
-  <div id="summaryOutput">Waiting for summary...</div>
-
-  <div class="tiles">
-    <div class="easter-egg">Clancy Portal</div>
-    <div class="easter-egg">Scaled Button</div>
-    <div class="easter-egg">Icy Surprise</div>
-    <div class="easter-egg">Purpleverse</div>
-    <div class="easter-egg">TOP Secret</div>
+  <div class="tile">
+    <h1>ScaledSummary</h1>
+    <input type="text" id="url" placeholder="Enter YouTube video URL" />
+    <button onclick="fetchSummary()">Get Summary</button>
+    <button onclick="triggerEasterEgg()">Easter Egg</button>
+    <div id="output">Summary will appear here...</div>
+    <div class="egg" id="egg-message"></div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    async function fetchSummary() {
+      const url = document.getElementById('url').value;
+      const output = document.getElementById('output');
+      output.innerText = "Loading...";
+
+      try {
+        const response = await fetch("/summary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await response.json();
+        output.innerText = data.transcript || data.error || "Something went wrong.";
+      } catch (err) {
+        output.innerText = "Failed to fetch summary.";
+      }
+    }
+
+    function triggerEasterEgg() {
+      const eggs = [
+        "You're the Clancy to my Dema.",
+        "The Banditos support you.",
+        "Easter Egg unlocked: Level 21 Pilot!",
+        "Scaled and Icy… more like Scaled and Spicy.",
+        "Strike Three? Nah, Home Run.",
+      ];
+      const msg = eggs[Math.floor(Math.random() * eggs.length)];
+      document.getElementById("egg-message").innerText = msg;
+    }
+  </script>
 </body>
 </html>
