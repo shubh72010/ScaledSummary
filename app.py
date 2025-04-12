@@ -1,4 +1,8 @@
-from flask import Flask, request, jsonify, render_template from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound import time import threading import hashlib
+from flask import Flask, request, jsonify, render_template
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
+import time
+import threading
+import hashlib
 
 app = Flask(name)
 
