@@ -1,49 +1,57 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, render_template, request, jsonify
 from youtube_transcript_api import YouTubeTranscriptApi
 from transformers import pipeline
-from urllib.parse import urlparse, parse_qs
+import re
 
 app = Flask(__name__)
-summarizer = pipeline("summarization")
+
+# Initialize the summarization pipeline with a lightweight model
+summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-6-6")
 
 def extract_video_id(url):
-    parsed_url = urlparse(url)
-    if parsed_url.hostname == 'youtu.be':
-        return parsed_url.path[1:]
-    elif parsed_url.hostname in ('www.youtube.com', 'youtube.com'):
-        if parsed_url.path == '/watch':
-            return parse_qs(parsed_url.query).get('v', [None])[0]
-        elif parsed_url.path.startswith('/embed/'):
-            return parsed_url.path.split('/')[2]
-        elif parsed_url.path.startswith('/v/'):
-            return parsed_url.path.split('/')[2]
-    return None
+    """
+    Extracts the video ID from a YouTube URL.
+    """
+    pattern = r"(?:v=|\/)([0-9A-Za-z_-]{11}).*"
+    match = re.search(pattern, url)
+    return match.group(1) if match else None
 
-def fetch_transcript(video_url):
-    video_id = extract_video_id(video_url)
-    if not video_id:
-        raise ValueError("Invalid YouTube URL")
-    transcript = YouTubeTranscriptApi.get_transcript(video_id)
-    return " ".join([entry['text'] for entry in transcript])
+def get_transcript(video_id):
+    """
+    Retrieves the transcript for a given YouTube video ID.
+    """
+    try:
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        return " ".join([entry['text'] for entry in transcript])
+    except Exception as e:
+        return None
 
 def summarize_text(text):
-    max_chunk = 1000
+    """
+    Summarizes the provided text using the initialized summarizer.
+    """
+    # Split text into manageable chunks
+    max_chunk = 500
     chunks = [text[i:i+max_chunk] for i in range(0, len(text), max_chunk)]
     summary = ""
     for chunk in chunks:
-        summary += summarizer(chunk, max_length=130, min_length=30, do_sample=False)[0]['summary_text'] + " "
+        summarized = summarizer(chunk, max_length=100, min_length=30, do_sample=False)
+        summary += summarized[0]['summary_text'] + " "
     return summary.strip()
 
-@app.route("/", methods=["GET", "POST"])
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == "POST":
-        video_url = request.form.get("url", "").strip()
-        if video_url.lower() == "ling guli guli guli wantang wu":
-            return jsonify({"summary": "🎉 Easter Egg Unlocked: You have the magic words! 🎉"})
-        try:
-            transcript = fetch_transcript(video_url)
-            summary = summarize_text(transcript)
-            return jsonify({"summary": summary})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 400
-    return render_template("index.html")
+    if request.method == 'POST':
+        url = request.form.get('url')
+        video_id = extract_video_id(url)
+        if not video_id:
+            return jsonify({'error': 'Invalid YouTube URL.'})
+        transcript = get_transcript(video_id)
+        if not transcript:
+            return jsonify({'error': 'Transcript not available for this video.'})
+        summary = summarize_text(transcript)
+        return jsonify({'summary': summary})
+    return render_template('index.html')
+
+if __name__ == '__main__':
+    app.run(debug=False)
