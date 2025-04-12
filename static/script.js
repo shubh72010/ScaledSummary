@@ -1,61 +1,43 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('summaryForm');
-    const urlInput = document.getElementById('urlInput');
-    const resultBox = document.getElementById('result');
-    const summaryText = document.getElementById('summaryText');
-    const errorBox = document.getElementById('error');
-    const errorText = document.getElementById('errorText');
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("videoUrl");
+  const output = document.getElementById("summaryOutput");
+  const buttons = document.querySelectorAll("button.summary-btn");
+  const eggButtons = document.querySelectorAll(".easter-egg");
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        resultBox.style.display = 'none';
-        errorBox.style.display = 'none';
+  buttons.forEach(button => {
+    button.addEventListener("click", async () => {
+      const url = input.value.trim();
+      if (!url) {
+        output.innerText = "Please enter a YouTube video URL!";
+        return;
+      }
 
-        const url = urlInput.value.trim();
-        try {
-            const response = await fetch("/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Accept": "application/json"
-                },
-                body: new URLSearchParams({ url })
-            });
-            const data = await response.json();
-            if (data.summary) {
-                summaryText.innerText = data.summary;
-                resultBox.style.display = 'block';
-            } else if (data.error) {
-                errorText.innerText = data.error;
-                errorBox.style.display = 'block';
-            }
-        } catch (err) {
-            errorText.innerText = err.message;
-            errorBox.style.display = 'block';
-        }
+      output.innerText = "Summarizing...";
+      try {
+        const res = await fetch("/summary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        output.innerText = data.transcript || data.error || "No transcript found.";
+      } catch (err) {
+        output.innerText = "Error fetching summary.";
+        console.error(err);
+      }
     });
+  });
 
-    // Easter egg interactions
-    document.getElementById('tile1').addEventListener('click', () => {
-        alert('🐣 Surprise! You found the first Easter egg!');
+  eggButtons.forEach((egg, index) => {
+    egg.addEventListener("click", () => {
+      const messages = [
+        "Easter Egg Unlocked: Purple Potato Mode!",
+        "Shhh... this button does secret AI stuff!",
+        "Scaled & Icy but make it HTML.",
+        "Clancy is watching...",
+        "You're 1 click away from multiversal chaos."
+      ];
+      output.innerText = messages[index % messages.length];
     });
-
-    document.getElementById('tile2').addEventListener('click', () => {
-        const egg = document.createElement('div');
-        egg.textContent = '🥚';
-        egg.style.position = 'fixed';
-        egg.style.left = Math.random() * 100 + 'vw';
-        egg.style.top = '-50px';
-        egg.style.fontSize = '2rem';
-        egg.style.animation = 'drop 3s linear forwards';
-        document.body.appendChild(egg);
-    });
-
-    document.getElementById('tile3').addEventListener('click', () => {
-        document.body.style.transition = 'background-color 0.5s';
-        document.body.style.backgroundColor = '#ffeb3b';
-        setTimeout(() => {
-            document.body.style.backgroundColor = ''; // Reset background color after a short delay
-        }, 1000);
-    });
+  });
 });
