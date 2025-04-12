@@ -1,120 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>ScaledSummary</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background: linear-gradient(135deg, #b38add, #7f62c4);
       font-family: 'Segoe UI', sans-serif;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
+      background: #1e1e2f;
+      color: #eee;
       margin: 0;
+      padding: 20px;
     }
 
-    .tile {
-      background: rgba(255, 255, 255, 0.1);
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #2a2a40;
       border-radius: 16px;
-      padding: 1rem;
-      margin: 1rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      width: 90%;
-      max-width: 600px;
-      backdrop-filter: blur(10px);
-      transition: transform 0.3s;
+      padding: 20px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
     }
 
-    .tile:hover {
-      transform: scale(1.03);
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
     }
 
-    input, button {
-      padding: 0.6rem;
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
       border: none;
-      border-radius: 8px;
-      margin: 0.5rem;
+      border-radius: 12px;
       font-size: 1rem;
+      margin-bottom: 1rem;
     }
 
     button {
-      background-color: #5e35b1;
-      color: white;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      margin: 6px;
       cursor: pointer;
+      transition: 0.2s;
     }
 
-    button:hover {
-      background-color: #7e57c2;
+    #submitBtn {
+      background-color: #8a6af4;
+      color: white;
     }
 
     #output {
-      white-space: pre-wrap;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 1rem;
+      background-color: #121220;
+      padding: 15px;
       border-radius: 12px;
-      margin-top: 1rem;
+      margin-top: 20px;
+      white-space: pre-wrap;
     }
 
     .egg {
-      font-size: 0.85rem;
-      opacity: 0.7;
-      text-align: center;
-      margin-top: 1rem;
+      background-color: #ff579c;
+      color: #fff;
     }
 
-    .egg-button {
-      background-color: transparent;
-      color: white;
-      text-decoration: underline;
-      border: none;
-      margin-top: 0.5rem;
+    .egg:hover {
+      transform: scale(1.1);
+    }
+
+    #status {
+      margin-top: 10px;
+      color: #ccc;
+      font-style: italic;
     }
   </style>
 </head>
 <body>
-  <div class="tile">
+  <div class="container">
     <h1>ScaledSummary</h1>
-    <input type="text" id="url" placeholder="Enter YouTube video URL" />
-    <button onclick="fetchSummary()">Get Summary</button>
-    <button onclick="triggerEasterEgg()">Easter Egg</button>
-    <div id="output">Summary will appear here...</div>
-    <div class="egg" id="egg-message"></div>
+    <input type="text" id="videoUrl" placeholder="Paste YouTube video URL here...">
+    <div>
+      <button id="submitBtn">Summarize</button>
+      <button class="egg" onclick="alert('No Easter egg here... or is there?')">Easter Egg 1</button>
+      <button class="egg" onclick="document.body.style.backgroundColor = '#663399'">Purple Mode</button>
+      <button class="egg" onclick="document.getElementById('output').innerText = 'You just wasted a click.'">Bait Click</button>
+    </div>
+    <div id="status"></div>
+    <div id="output"></div>
   </div>
 
   <script>
-    async function fetchSummary() {
-      const url = document.getElementById('url').value;
-      const output = document.getElementById('output');
-      output.innerText = "Loading...";
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const url = document.getElementById('videoUrl').value.trim();
+      if (!url) return alert("Paste a YouTube URL first!");
 
-      try {
-        const response = await fetch("/summary", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url })
-        });
+      document.getElementById('status').textContent = 'Fetching summary...';
+      document.getElementById('output').textContent = '';
 
-        const data = await response.json();
-        output.innerText = data.transcript || data.error || "Something went wrong.";
-      } catch (err) {
-        output.innerText = "Failed to fetch summary.";
-      }
-    }
-
-    function triggerEasterEgg() {
-      const eggs = [
-        "You're the Clancy to my Dema.",
-        "The Banditos support you.",
-        "Easter Egg unlocked: Level 21 Pilot!",
-        "Scaled and Icy… more like Scaled and Spicy.",
-        "Strike Three? Nah, Home Run.",
-      ];
-      const msg = eggs[Math.floor(Math.random() * eggs.length)];
-      document.getElementById("egg-message").innerText = msg;
-    }
+      fetch('/summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.transcript) {
+          document.getElementById('output').textContent = data.transcript;
+          document.getElementById('status').textContent = 'Done!';
+        } else {
+          throw new Error(data.error || 'Unknown error.');
+        }
+      })
+      .catch(err => {
+        document.getElementById('status').textContent = 'Failed to get summary.';
+        document.getElementById('output').textContent = err.message;
+      });
+    });
   </script>
 </body>
 </html>
