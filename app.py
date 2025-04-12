@@ -1,14 +1,12 @@
 from flask import Flask, request, jsonify, render_template
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
-import time
 import threading
+import time
 
 app = Flask(__name__)
 
 transcript_cache = {}
 cache_lock = threading.Lock()
-
-MAX_RETRIES = 5
 
 @app.route("/")
 def home():
@@ -16,27 +14,17 @@ def home():
 
 def get_cached_transcript(video_id):
     with cache_lock:
-        if video_id in transcript_cache:
-            return transcript_cache[video_id]
-        return None
+        return transcript_cache.get(video_id)
 
 def cache_transcript(video_id, transcript):
     with cache_lock:
         transcript_cache[video_id] = transcript
 
-def get_transcript_with_retry(video_id):
-    retries = 0
-    while retries < MAX_RETRIES:
-        try:
-            # Try to fetch the transcript
-            transcript = YouTubeTranscriptApi.get_transcript(video_id)
-            return transcript
-        except (TranscriptsDisabled, NoTranscriptFound):
-            raise
-        except Exception as e:
-            retries += 1
-            print(f"Error: {e}. Retrying {retries}/{MAX_RETRIES}...")
-            time.sleep(5)  # Increase sleep time for retries
+def extract_video_id(url):
+    if "v=" in url:
+        return url.split("v=")[-1].split("&")[0]
+    elif "youtu.be/" in url:
+        return url.split("youtu.be/")[-1].split("?")[0]
     return None
 
 @app.route("/summary", methods=["POST"])
@@ -52,27 +40,19 @@ def get_summary():
     if cached:
         return jsonify({"transcript": cached})
 
-    try:
-        # Delay to avoid hammering YouTube
-        time.sleep(1.5)
-        transcript = get_transcript_with_retry(video_id)  # Using retry function
-        if transcript:
+    for attempt in range(3):
+        try:
+            time.sleep(5)  # avoid hammering YouTube
+            transcript = YouTubeTranscriptApi.get_transcript(video_id)
             text = " ".join([entry["text"] for entry in transcript])
             cache_transcript(video_id, text)
             return jsonify({"transcript": text})
-        else:
-            return jsonify({"error": "Unable to retrieve transcript after multiple attempts."}), 404
-    except (TranscriptsDisabled, NoTranscriptFound):
-        return jsonify({"error": "Transcript not available for this video."}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-def extract_video_id(url):
-    if "v=" in url:
-        return url.split("v=")[-1].split("&")[0]
-    elif "youtu.be/" in url:
-        return url.split("youtu.be/")[-1].split("?")[0]
-    return None
+        except (TranscriptsDisabled, NoTranscriptFound):
+            return jsonify({"error": "Transcript not available for this video."}), 404
+        except Exception as e:
+            if attempt == 2:
+                return jsonify({"error": f"Failed after 3 attempts: {str(e)}"}), 429
+            time.sleep(3)  # wait before next try
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
