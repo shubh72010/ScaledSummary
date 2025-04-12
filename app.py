@@ -6,8 +6,7 @@ import re
 app = Flask(__name__)
 
 # Initialize the summarization pipeline with a lightweight model
-summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-6-6")
-
+summarizer = pipeline("summarization", model="Falconsai/text_summarization")
 def extract_video_id(url):
     """
     Extracts the video ID from a YouTube URL.
