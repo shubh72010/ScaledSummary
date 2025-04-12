@@ -8,6 +8,8 @@ app = Flask(__name__)
 transcript_cache = {}
 cache_lock = threading.Lock()
 
+MAX_RETRIES = 5
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -21,6 +23,21 @@ def get_cached_transcript(video_id):
 def cache_transcript(video_id, transcript):
     with cache_lock:
         transcript_cache[video_id] = transcript
+
+def get_transcript_with_retry(video_id):
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            # Try to fetch the transcript
+            transcript = YouTubeTranscriptApi.get_transcript(video_id)
+            return transcript
+        except (TranscriptsDisabled, NoTranscriptFound):
+            raise
+        except Exception as e:
+            retries += 1
+            print(f"Error: {e}. Retrying {retries}/{MAX_RETRIES}...")
+            time.sleep(5)  # Increase sleep time for retries
+    return None
 
 @app.route("/summary", methods=["POST"])
 def get_summary():
@@ -38,10 +55,13 @@ def get_summary():
     try:
         # Delay to avoid hammering YouTube
         time.sleep(1.5)
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        text = " ".join([entry["text"] for entry in transcript])
-        cache_transcript(video_id, text)
-        return jsonify({"transcript": text})
+        transcript = get_transcript_with_retry(video_id)  # Using retry function
+        if transcript:
+            text = " ".join([entry["text"] for entry in transcript])
+            cache_transcript(video_id, text)
+            return jsonify({"transcript": text})
+        else:
+            return jsonify({"error": "Unable to retrieve transcript after multiple attempts."}), 404
     except (TranscriptsDisabled, NoTranscriptFound):
         return jsonify({"error": "Transcript not available for this video."}), 404
     except Exception as e:
