@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-import requests
-from bs4 import BeautifulSoup
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 import threading
 import time
 
@@ -11,7 +10,7 @@ cache_lock = threading.Lock()
 
 @app.route("/")
 def home():
-    return render_template("index.html")  # Remove this if you don't need it
+    return render_template("index.html")
 
 def extract_video_id(url):
     if "v=" in url:
@@ -28,36 +27,6 @@ def cache_transcript(video_id, transcript):
     with cache_lock:
         transcript_cache[video_id] = transcript
 
-def fetch_from_youtubetranscript(video_id):
-    try:
-        url = f"https://youtubetranscript.com/?v={video_id}"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-        divs = soup.select("div#transcript > div")
-        transcript = " ".join(div.text.strip() for div in divs)
-        return transcript if transcript else None
-    except Exception as e:
-        print("youtubetranscript.com failed:", e)
-        return None
-
-def fetch_from_downsub(video_id):
-    try:
-        url = f"https://downsub.com/?url=https://www.youtube.com/watch?v={video_id}"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-        download_link = soup.find("a", string="Download")
-        if download_link:
-            file_url = download_link["href"]
-            file_response = requests.get(file_url, timeout=10)
-            file_response.raise_for_status()
-            return file_response.text
-        return None
-    except Exception as e:
-        print("downsub.com failed:", e)
-        return None
-
 @app.route("/summary", methods=["POST"])
 def get_summary():
     data = request.get_json()
@@ -71,17 +40,16 @@ def get_summary():
     if cached:
         return jsonify({"transcript": cached})
 
-    time.sleep(1.5)
-
-    transcript = fetch_from_youtubetranscript(video_id)
-    if not transcript:
-        transcript = fetch_from_downsub(video_id)
-
-    if not transcript:
-        return jsonify({"error": "Transcript not available from any source."}), 404
-
-    cache_transcript(video_id, transcript)
-    return jsonify({"transcript": transcript})
+    try:
+        time.sleep(1.5)  # To avoid bot detection
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        full_text = " ".join([entry["text"] for entry in transcript])
+        cache_transcript(video_id, full_text)
+        return jsonify({"transcript": full_text})
+    except (TranscriptsDisabled, NoTranscriptFound):
+        return jsonify({"error": "Transcript not available for this video."}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
