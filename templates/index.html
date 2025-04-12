@@ -1,23 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>ScaledSummary</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>ScaledSummary</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <h1>ScaledSummary</h1>
-        <form method="post">
-            <input type="text" name="video_url" placeholder="Paste YouTube URL" required>
-            <button type="submit">Get Summary</button>
-        </form>
-        {% if summary %}
+  <div class="hero">
+    <div class="glass">
+      <h1>ScaledSummary</h1>
+      <p class="subtitle">Summarize YouTube videos with AI magic</p>
+      <form method="post">
+        <input type="text" name="url" placeholder="Enter YouTube Video URL" required>
+        <button type="submit">Summarize</button>
+      </form>
+      {% if summary %}
         <div class="result">
-            <h2>Summary</h2>
-            <p>{{ summary }}</p>
+          <h2>Summary</h2>
+          <p>{{ summary }}</p>
         </div>
-        {% endif %}
+      {% elif error %}
+        <div class="error">
+          <h2>Error</h2>
+          <p>{{ error }}</p>
+        </div>
+      {% endif %}
+      <div class="easter-eggs">
+        <div class="tile" title="You found a secret tile!">🐣</div>
+        <div class="tile" title="Another Easter Egg!">🥚</div>
+        <div class="tile" title="Keep clicking for surprises!">🎉</div>
+      </div>
     </div>
+  </div>
 </body>
 </html>
