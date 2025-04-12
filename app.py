@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
+import requests
+from bs4 import BeautifulSoup
 import threading
 import time
 
@@ -10,7 +11,14 @@ cache_lock = threading.Lock()
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html")  # or remove if not using
+
+def extract_video_id(url):
+    if "v=" in url:
+        return url.split("v=")[-1].split("&")[0]
+    elif "youtu.be/" in url:
+        return url.split("youtu.be/")[-1].split("?")[0]
+    return None
 
 def get_cached_transcript(video_id):
     with cache_lock:
@@ -20,12 +28,20 @@ def cache_transcript(video_id, transcript):
     with cache_lock:
         transcript_cache[video_id] = transcript
 
-def extract_video_id(url):
-    if "v=" in url:
-        return url.split("v=")[-1].split("&")[0]
-    elif "youtu.be/" in url:
-        return url.split("youtu.be/")[-1].split("?")[0]
-    return None
+def fetch_transcript_from_mirror(video_id):
+    try:
+        url = f"https://youtubetranscript.com/?v={video_id}"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        divs = soup.select("div#transcript > div")
+        transcript = " ".join(div.text.strip() for div in divs)
+        return transcript if transcript else None
+
+    except Exception as e:
+        print("Mirror fetch failed:", e)
+        return None
 
 @app.route("/summary", methods=["POST"])
 def get_summary():
@@ -40,19 +56,14 @@ def get_summary():
     if cached:
         return jsonify({"transcript": cached})
 
-    for attempt in range(3):
-        try:
-            time.sleep(5)  # avoid hammering YouTube
-            transcript = YouTubeTranscriptApi.get_transcript(video_id)
-            text = " ".join([entry["text"] for entry in transcript])
-            cache_transcript(video_id, text)
-            return jsonify({"transcript": text})
-        except (TranscriptsDisabled, NoTranscriptFound):
-            return jsonify({"error": "Transcript not available for this video."}), 404
-        except Exception as e:
-            if attempt == 2:
-                return jsonify({"error": f"Failed after 3 attempts: {str(e)}"}), 429
-            time.sleep(3)  # wait before next try
+    time.sleep(1.5)  # prevent abuse
+    transcript = fetch_transcript_from_mirror(video_id)
+
+    if not transcript:
+        return jsonify({"error": "Transcript not available."}), 404
+
+    cache_transcript(video_id, transcript)
+    return jsonify({"transcript": transcript})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
