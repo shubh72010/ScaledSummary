@@ -1,33 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- index.html --><!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>YouTube Summarizer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScaledSummary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>YouTube Video Summarizer</h1>
-        <form id="summaryForm" method="post">
-            <input type="text" id="urlInput" name="url" placeholder="Enter YouTube URL" required>
-            <button type="submit">Summarize</button>
-        </form>
-        <div id="outputBox">
-            <div id="result" class="result" style="display:none;">
-                <h2>Summary:</h2>
-                <p id="summaryText"></p>
-            </div>
-            <div id="error" class="error" style="display:none;">
-                <h2>Error:</h2>
-                <p id="errorText"></p>
-            </div>
-        </div>
-        <div class="easter-eggs">
-            <div class="tile" id="tile1">🐣</div>
-            <div class="tile" id="tile2">🥚</div>
-            <div class="tile" id="tile3">🎉</div>
-        </div>
-    </div>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
+  <div class="app">
+    <header>
+      <h1>ScaledSummary</h1>
+      <p class="tagline">Summarize YouTube like a pro.</p>
+    </header><div class="input-area">
+  <input id="video-url" type="text" placeholder="Paste YouTube URL here...">
+  <div class="button-group">
+    <button onclick="fetchSummary()">Summarize</button>
+    <button onclick="triggerEasterEgg()">Surprise</button>
+  </div>
+</div>
+
+<div id="summary-box" class="output-box hidden">
+  <h2>Summary</h2>
+  <p id="summary-text">No summary yet...</p>
+</div>
+
+<footer>
+  <p>Scaled and Icy vibes. <span class="egg" onclick="rickroll()">Click me?</span></p>
+</footer>
+
+  </div>  <script src="script.js"></script></body>
 </html>
