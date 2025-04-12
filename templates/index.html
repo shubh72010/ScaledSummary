@@ -11,27 +11,90 @@
     <div class="glass">
       <h1>ScaledSummary</h1>
       <p class="subtitle">Summarize YouTube videos with AI magic</p>
-      <form method="post">
-        <input type="text" name="url" placeholder="Enter YouTube Video URL" required>
+      <form id="summaryForm">
+        <input type="text" name="url" id="urlInput" placeholder="Enter YouTube Video URL" required>
         <button type="submit">Summarize</button>
       </form>
-      {% if summary %}
-        <div class="result">
-          <h2>Summary</h2>
-          <p>{{ summary }}</p>
+      <div id="outputBox">
+        <div id="result" class="result" style="display:none;">
+          <h2>Summary:</h2>
+          <p id="summaryText"></p>
         </div>
-      {% elif error %}
-        <div class="error">
-          <h2>Error</h2>
-          <p>{{ error }}</p>
+        <div id="error" class="error" style="display:none;">
+          <h2>Error:</h2>
+          <p id="errorText"></p>
         </div>
-      {% endif %}
+      </div>
       <div class="easter-eggs">
-        <div class="tile" title="You found a secret tile!">🐣</div>
-        <div class="tile" title="Another Easter Egg!">🥚</div>
-        <div class="tile" title="Keep clicking for surprises!">🎉</div>
+        <div class="tile" id="tile1" title="You found a secret tile!">🐣</div>
+        <div class="tile" id="tile2" title="Another Easter Egg!">🥚</div>
+        <div class="tile" id="tile3" title="Keep clicking for surprises!">🎉</div>
       </div>
     </div>
   </div>
+  <script>
+    document.getElementById('summaryForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('error').style.display = 'none';
+
+      const url = document.getElementById('urlInput').value;
+      try {
+        const response = await fetch("/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json"
+          },
+          body: new URLSearchParams({ url })
+        });
+        const data = await response.json();
+        if (data.summary) {
+          document.getElementById('summaryText').innerText = data.summary;
+          document.getElementById('result').style.display = 'block';
+        } else if (data.error) {
+          document.getElementById('errorText').innerText = data.error;
+          document.getElementById('error').style.display = 'block';
+        }
+      } catch (err) {
+        document.getElementById('errorText').innerText = err.message;
+        document.getElementById('error').style.display = 'block';
+      }
+    });
+
+    document.getElementById('tile1').addEventListener('click', () => {
+      alert('🐣 Surprise! You found the first Easter egg!');
+    });
+
+    document.getElementById('tile2').addEventListener('click', () => {
+      const egg = document.createElement('div');
+      egg.textContent = '🥚';
+      egg.style.position = 'fixed';
+      egg.style.left = Math.random() * 100 + 'vw';
+      egg.style.top = '-50px';
+      egg.style.fontSize = '2rem';
+      egg.style.animation = 'drop 3s linear forwards';
+      document.body.appendChild(egg);
+    });
+
+    document.getElementById('tile3').addEventListener('click', () => {
+      document.body.style.transition = 'background-color 0.5s';
+      document.body.style.backgroundColor = '#ffeb3b';
+      setTimeout(() => {
+        document.body.style.backgroundColor = '';
+      }, 500);
+    });
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes drop {
+        to {
+          top: 100vh;
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
 </body>
 </html>
